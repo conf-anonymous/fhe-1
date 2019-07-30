@@ -12,7 +12,7 @@ module X
 
     def initialize(gamma,lambda)
       p1_bits = gamma * lambda
-      p2_bits = p1_bits / (2 * gamma)
+      p2_bits = lambda / 2
       p3_bits = lambda - 1
       p4_bits = lambda - 1
 
