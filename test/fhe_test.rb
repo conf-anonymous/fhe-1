@@ -6,6 +6,8 @@ class TestFHE < Minitest::Test
     @x = X::FHE.new(4,128)
     @p1 = @x.p1
     @p2 = @x.p2
+    @p3 = @x.p3
+    @p4 = @x.p4
     @q = @x.q
     @e = @x.e
     @k = @x.k
@@ -34,15 +36,15 @@ class TestFHE < Minitest::Test
     m3 = -28
     m4 = Rational(-9,4)
 
-    mm1 = X::FHE.hensel_packing(m1, @p2, @q)
-    mm2 = X::FHE.hensel_packing(m2, @p2, @q)
-    mm3 = X::FHE.hensel_packing(m3, @p2, @q)
-    mm4 = X::FHE.hensel_packing(m4, @p2, @q)
+    mm1 = X::FHE.hensel_packing(m1, @p2, @p3, @p4, @q)
+    mm2 = X::FHE.hensel_packing(m2, @p2, @p3, @p4, @q)
+    mm3 = X::FHE.hensel_packing(m3, @p2, @p3, @p4, @q)
+    mm4 = X::FHE.hensel_packing(m4, @p2, @p3, @p4, @q)
 
-    assert_equal m1, X::FHE.hensel_unpacking(mm1, @p2)
-    assert_equal m2, X::FHE.hensel_unpacking(mm2, @p2)
-    assert_equal m3, X::FHE.hensel_unpacking(mm3, @p2)
-    assert_equal m4, X::FHE.hensel_unpacking(mm4, @p2)
+    assert_equal m1, X::FHE.hensel_unpacking(mm1, @p2, @p3, @p4)
+    assert_equal m2, X::FHE.hensel_unpacking(mm2, @p2, @p3, @p4)
+    assert_equal m3, X::FHE.hensel_unpacking(mm3, @p2, @p3, @p4)
+    assert_equal m4, X::FHE.hensel_unpacking(mm4, @p2, @p3, @p4)
   end
 
   def test_encryption_decryption

@@ -11,10 +11,10 @@ module X
     end
 
     def initialize(gamma,lambda)
-      p1_bits = gamma * lambda
-      p2_bits = lambda / 2
-      p3_bits = lambda - 1
-      p4_bits = lambda - 1
+      p1_bits = 2 * gamma * lambda
+      p2_bits = lambda / 4
+      p3_bits = lambda
+      p4_bits = lambda
 
       @p1 = self.class.random_prime(p1_bits)
       @p2 = self.class.random_prime(p2_bits)
@@ -30,8 +30,8 @@ module X
 
           @q = @p1 * @p2 * @p3 * @p4
 
-          k1 = self.class.hensel_packing(@p3, @p2, @q)
-          k2 = self.class.hensel_packing(@p4, @p2, @q)
+          k1 = self.class.hensel_packing(@p3, @p2, @p3, @p4, @q)
+          k2 = self.class.hensel_packing(@p4, @p2, @p3, @p4, @q)
           @k = k1.gp(k2)
 
           @k.inverse
@@ -59,8 +59,8 @@ module X
       Xp.new([p], n.numerator, n.denominator).to_r
     end
 
-    def self.hensel_packing(m, p, q)
-      p_bits = p.bit_length
+    def self.hensel_packing(m, p2, p3, p4, q)
+      p_bits = p2.bit_length
 
       rs = Array.new(4){ FHE.random_number(p_bits / 8) }
 
@@ -85,7 +85,7 @@ module X
       mm_ = Multivector2D.new data_
 
       data_p = data_.map{|d|
-        hensel_encoding(d, p)
+        random_number(p_bits / 4) * p3 * p4 + hensel_encoding(d, p2)
       }
 
       mm_p = Multivector2Dff.new data_p, q
@@ -93,11 +93,11 @@ module X
       mm_p
     end
 
-    def self.hensel_unpacking(mm, p)
+    def self.hensel_unpacking(mm, p2, p3, p4)
       # data = mm.data.map{|d| d % sk.q}
 
       data_ = mm.data.map{|d|
-        hensel_decoding(d, p)
+        hensel_decoding(d % (p3 * p4), p2)
       }
 
       data_.inject(:+)
@@ -145,7 +145,7 @@ module X
     end
 
     def encrypt(m)
-      mm = self.class.hensel_packing(m,p2,q)
+      mm = self.class.hensel_packing(m,p2,p3,p4,q)
       me = mm.gp(e)
       c_ = self.class.multivector_to_n(me,p1)
       c__ = c_.gp(e)
@@ -160,7 +160,7 @@ module X
 
       me = self.class.undo_multivector_to_n(c__,p1)
 
-      m = self.class.hensel_unpacking(me, p2)
+      m = self.class.hensel_unpacking(me, p2, p3, p4)
       m
     end
 
